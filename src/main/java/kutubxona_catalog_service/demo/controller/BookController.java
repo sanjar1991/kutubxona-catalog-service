@@ -50,6 +50,8 @@ public class BookController {
                     existingBook.setTotalCopies(updatedBook.getTotalCopies());
                     existingBook.setAvailableCopies(updatedBook.getAvailableCopies());
                     existingBook.setPrice(updatedBook.getPrice());
+                    existingBook.setAuthors(updatedBook.getAuthors());
+                    existingBook.setCategories(updatedBook.getCategories());
                     Book saved = bookRepository.save(existingBook);
                     return ResponseEntity.ok(saved);
                 })
