@@ -1,7 +1,9 @@
 package kutubxona_catalog_service.demo.controller;
 
-import kutubxona_catalog_service.demo.entity.Member;
-import kutubxona_catalog_service.demo.repository.MemberRepository;
+import jakarta.validation.Valid;
+import kutubxona_catalog_service.demo.dto.MemberRequest;
+import kutubxona_catalog_service.demo.dto.MemberResponse;
+import kutubxona_catalog_service.demo.service.MemberService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,26 +14,24 @@ import java.util.List;
 @RequestMapping("/api/members")
 public class MemberController {
 
-    private final MemberRepository memberRepository;
+    private final MemberService memberService;
 
-    public MemberController(MemberRepository memberRepository) {
-        this.memberRepository = memberRepository;
+    public MemberController(MemberService memberService) {
+        this.memberService = memberService;
     }
 
     @PostMapping
-    public ResponseEntity<Member> createMember(@RequestBody Member member) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(memberRepository.save(member));
+    public ResponseEntity<MemberResponse> create(@Valid @RequestBody MemberRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(memberService.create(request));
     }
 
     @GetMapping
-    public List<Member> getAllMembers() {
-        return memberRepository.findAll();
+    public List<MemberResponse> getAll() {
+        return memberService.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Member> getMemberById(@PathVariable Long id) {
-        return memberRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public MemberResponse getById(@PathVariable Long id) {
+        return memberService.findById(id);
     }
 }

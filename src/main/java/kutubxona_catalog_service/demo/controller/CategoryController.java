@@ -1,7 +1,9 @@
 package kutubxona_catalog_service.demo.controller;
 
-import kutubxona_catalog_service.demo.entity.Category;
-import kutubxona_catalog_service.demo.repository.CategoryRepository;
+import jakarta.validation.Valid;
+import kutubxona_catalog_service.demo.dto.CategoryRequest;
+import kutubxona_catalog_service.demo.dto.CategoryResponse;
+import kutubxona_catalog_service.demo.service.CategoryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,45 +14,35 @@ import java.util.List;
 @RequestMapping("/api/categories")
 public class CategoryController {
 
-    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
 
-    public CategoryController(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
     }
 
     @PostMapping
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(categoryRepository.save(category));
+    public ResponseEntity<CategoryResponse> create(@Valid @RequestBody CategoryRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(request));
     }
 
     @GetMapping
-    public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+    public List<CategoryResponse> getAll() {
+        return categoryService.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
-        return categoryRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public CategoryResponse getById(@PathVariable Long id) {
+        return categoryService.findById(id);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody Category updated) {
-        return categoryRepository.findById(id)
-                .map(existing -> {
-                    existing.setName(updated.getName());
-                    return ResponseEntity.ok(categoryRepository.save(existing));
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public CategoryResponse update(@PathVariable Long id, @Valid @RequestBody CategoryRequest request) {
+        return categoryService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
-        if (!categoryRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        categoryRepository.deleteById(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        categoryService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
