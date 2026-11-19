@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class LoanService {
@@ -26,7 +27,8 @@ public class LoanService {
 
     @Transactional
     public Loan borrowBook(Long bookId, Long memberId) {
-        Book book = bookRepository.findById(bookId)
+        // Qulf bilan o'qiladi — parallel so'rovlar navbatma-navbat ishlaydi
+        Book book = bookRepository.findByIdForUpdate(bookId)
                 .orElseThrow(() -> new IllegalArgumentException("Kitob topilmadi: id=" + bookId));
 
         Member member = memberRepository.findById(memberId)
@@ -61,10 +63,15 @@ public class LoanService {
         loan.setReturnedDate(LocalDate.now());
         loan.setStatus(LoanStatus.RETURNED);
 
-        Book book = loan.getBook();
+        Book book = bookRepository.findByIdForUpdate(loan.getBook().getId()).orElseThrow();
         book.setAvailableCopies(book.getAvailableCopies() + 1);
         bookRepository.save(book);
 
         return loanRepository.save(loan);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Loan> getAllLoans() {
+        return loanRepository.findAll();
     }
 }
