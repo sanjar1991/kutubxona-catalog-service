@@ -1,10 +1,7 @@
 package kutubxona_catalog_service.demo.stage3;
 
+import kutubxona_catalog_service.demo.support.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -14,11 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 3-bosqich: springdoc Spring Boot 4 bilan ishlashini tekshiradi.
  * OpenAPI hujjati generatsiya bo'lishi va barcha controller'lar unda ko'rinishi kerak.
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-class OpenApiDocsTest {
-
-    @Autowired MockMvc mockMvc;
+class OpenApiDocsTest extends IntegrationTestBase {
 
     @Test
     void apiDocs_areGeneratedForAllControllers() throws Exception {

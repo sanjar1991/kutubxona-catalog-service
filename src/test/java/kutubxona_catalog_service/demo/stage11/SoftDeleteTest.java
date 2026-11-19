@@ -36,8 +36,8 @@ class SoftDeleteTest extends IntegrationTestBase {
         // API'da ko'rinmaydi
         mockMvc.perform(get("/api/books/{id}", deleted.getId())).andExpect(status().isNotFound());
         mockMvc.perform(get("/api/books"))
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].title").value("Qoladigan"));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].title").value("Qoladigan"));
     }
 
     @Test
@@ -56,9 +56,9 @@ class SoftDeleteTest extends IntegrationTestBase {
         mockMvc.perform(delete("/api/books/{id}", book.getId())).andExpect(status().isNoContent());
 
         mockMvc.perform(get("/api/loans"))
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].bookTitle").value("Tarixiy kitob"))
-                .andExpect(jsonPath("$[0].status").value("RETURNED"));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].bookTitle").value("Tarixiy kitob"))
+                .andExpect(jsonPath("$.content[0].status").value("RETURNED"));
     }
 
     @Test
@@ -95,7 +95,7 @@ class SoftDeleteTest extends IntegrationTestBase {
 
         assertThat(authorRepository.findById(author.getId()).orElseThrow().getDeletedAt()).isNotNull();
         mockMvc.perform(get("/api/authors/{id}", author.getId())).andExpect(status().isNotFound());
-        mockMvc.perform(get("/api/authors")).andExpect(jsonPath("$.length()").value(0));
+        mockMvc.perform(get("/api/authors")).andExpect(jsonPath("$.content.length()").value(0));
     }
 
     @Test

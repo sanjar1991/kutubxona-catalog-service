@@ -7,10 +7,11 @@ import kutubxona_catalog_service.demo.exception.BusinessRuleException;
 import kutubxona_catalog_service.demo.exception.ResourceNotFoundException;
 import kutubxona_catalog_service.demo.repository.AuthorRepository;
 import kutubxona_catalog_service.demo.repository.BookRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Service
 public class AuthorService {
@@ -24,8 +25,8 @@ public class AuthorService {
     }
 
     @Transactional(readOnly = true)
-    public List<AuthorResponse> findAll() {
-        return authorRepository.findAllByDeletedAtIsNull().stream().map(AuthorResponse::from).toList();
+    public Page<AuthorResponse> findAll(Pageable pageable) {
+        return authorRepository.findAllByDeletedAtIsNull(pageable).map(AuthorResponse::from);
     }
 
     @Transactional(readOnly = true)

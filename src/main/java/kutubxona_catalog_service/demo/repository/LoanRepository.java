@@ -2,6 +2,8 @@ package kutubxona_catalog_service.demo.repository;
 
 import kutubxona_catalog_service.demo.entity.Loan;
 import kutubxona_catalog_service.demo.entity.LoanStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -11,15 +13,20 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.List;
 
 @Repository
 public interface LoanRepository extends JpaRepository<Loan, Long> {
 
-    /** book va member bitta so'rovda yuklanadi (N+1 va LAZY proxy muammosiz). */
-    @Override
+    /**
+     * Ijaralarni filtrlab, sahifalab qaytaradi. Filtr null bo'lsa — hisobga olinmaydi.
+     * book va member bitta so'rovda yuklanadi (N+1 muammosiz).
+     */
     @EntityGraph(attributePaths = {"book", "member"})
-    List<Loan> findAll();
+    @Query("select l from Loan l where (:memberId is null or l.member.id = :memberId) "
+            + "and (:status is null or l.status = :status)")
+    Page<Loan> search(@Param("memberId") Long memberId,
+                      @Param("status") LoanStatus status,
+                      Pageable pageable);
 
     boolean existsByBook_IdAndStatusIn(Long bookId, Collection<LoanStatus> statuses);
 

@@ -42,11 +42,11 @@ class LoanResponseTest extends IntegrationTestBase {
         // Asosiy tekshiruv: findAll() LAZY proxy'lar bilan qaytadi
         mockMvc.perform(get("/api/loans"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].bookId").value(book.getId()))
-                .andExpect(jsonPath("$[0].bookTitle").value("O'tkan kunlar"))
-                .andExpect(jsonPath("$[0].memberId").value(member.getId()))
-                .andExpect(jsonPath("$[0].memberFullName").value("Ali Valiyev"))
-                .andExpect(jsonPath("$[0].dueDate").exists());
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].bookId").value(book.getId()))
+                .andExpect(jsonPath("$.content[0].bookTitle").value("O'tkan kunlar"))
+                .andExpect(jsonPath("$.content[0].memberId").value(member.getId()))
+                .andExpect(jsonPath("$.content[0].memberFullName").value("Ali Valiyev"))
+                .andExpect(jsonPath("$.content[0].dueDate").exists());
     }
 }
