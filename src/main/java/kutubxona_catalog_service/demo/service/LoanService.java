@@ -7,12 +7,13 @@ import kutubxona_catalog_service.demo.exception.ResourceNotFoundException;
 import kutubxona_catalog_service.demo.repository.BookRepository;
 import kutubxona_catalog_service.demo.repository.LoanRepository;
 import kutubxona_catalog_service.demo.repository.MemberRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -101,7 +102,13 @@ public class LoanService {
     }
 
     @Transactional(readOnly = true)
-    public List<Loan> getAllLoans() {
-        return loanRepository.findAll();
+    public Page<Loan> search(Long memberId, LoanStatus status, Pageable pageable) {
+        return loanRepository.search(memberId, status, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Loan getLoan(Long loanId) {
+        return loanRepository.findById(loanId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ijara", loanId));
     }
 }

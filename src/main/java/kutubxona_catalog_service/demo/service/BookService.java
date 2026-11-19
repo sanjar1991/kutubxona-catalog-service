@@ -12,6 +12,8 @@ import kutubxona_catalog_service.demo.repository.AuthorRepository;
 import kutubxona_catalog_service.demo.repository.BookRepository;
 import kutubxona_catalog_service.demo.repository.CategoryRepository;
 import kutubxona_catalog_service.demo.repository.LoanRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,8 +42,8 @@ public class BookService {
     }
 
     @Transactional(readOnly = true)
-    public List<BookResponse> findAll() {
-        return bookRepository.findAllByDeletedAtIsNull().stream().map(BookResponse::from).toList();
+    public Page<BookResponse> findAll(Pageable pageable) {
+        return bookRepository.findAllByDeletedAtIsNull(pageable).map(BookResponse::from);
     }
 
     @Transactional(readOnly = true)

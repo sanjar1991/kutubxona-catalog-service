@@ -4,11 +4,12 @@ import jakarta.validation.Valid;
 import kutubxona_catalog_service.demo.dto.AuthorRequest;
 import kutubxona_catalog_service.demo.dto.AuthorResponse;
 import kutubxona_catalog_service.demo.service.AuthorService;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/authors")
@@ -25,9 +26,10 @@ public class AuthorController {
         return ResponseEntity.status(HttpStatus.CREATED).body(authorService.create(request));
     }
 
+    /** Sahifalangan ro'yxat: ?page=0&size=20&sort=id,asc */
     @GetMapping
-    public List<AuthorResponse> getAll() {
-        return authorService.findAll();
+    public PagedModel<AuthorResponse> getAll(@PageableDefault(size = 20, sort = "id") Pageable pageable) {
+        return new PagedModel<>(authorService.findAll(pageable));
     }
 
     @GetMapping("/{id}")

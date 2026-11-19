@@ -3,6 +3,7 @@ package kutubxona_catalog_service.demo.exception;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -47,6 +48,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.warn("Ma'lumotlar yaxlitligi buzildi: {}", ex.getMostSpecificCause().getMessage());
         return problem(HttpStatus.CONFLICT, "Ziddiyat",
                 "Ma'lumot mavjud yozuvlar bilan ziddiyatda (takroriy qiymat yoki bog'liqlik)");
+    }
+
+    /** ?sort=... da mavjud bo'lmagan maydon ko'rsatilgan. */
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ProblemDetail handleBadSort(PropertyReferenceException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "Noto'g'ri saralash",
+                "Saralash uchun noma'lum maydon: " + ex.getPropertyName());
     }
 
     /** @Valid xatolari: {"errors": {"title": "Kitob nomi bo'sh bo'lmasligi kerak", ...}} */

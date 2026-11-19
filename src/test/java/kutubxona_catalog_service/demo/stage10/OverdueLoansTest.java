@@ -83,7 +83,7 @@ class OverdueLoansTest extends IntegrationTestBase {
         loanService.markOverdueLoans(today);
 
         mockMvc.perform(get("/api/loans"))
-                .andExpect(jsonPath("$[0].status").value("OVERDUE"));
+                .andExpect(jsonPath("$.content[0].status").value("OVERDUE"));
 
         mockMvc.perform(post("/api/loans/{id}/return", loanId))
                 .andExpect(status().isOk())

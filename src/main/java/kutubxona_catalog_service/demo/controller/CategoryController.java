@@ -4,11 +4,12 @@ import jakarta.validation.Valid;
 import kutubxona_catalog_service.demo.dto.CategoryRequest;
 import kutubxona_catalog_service.demo.dto.CategoryResponse;
 import kutubxona_catalog_service.demo.service.CategoryService;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -25,9 +26,10 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(request));
     }
 
+    /** Sahifalangan ro'yxat: ?page=0&size=20&sort=id,asc */
     @GetMapping
-    public List<CategoryResponse> getAll() {
-        return categoryService.findAll();
+    public PagedModel<CategoryResponse> getAll(@PageableDefault(size = 20, sort = "id") Pageable pageable) {
+        return new PagedModel<>(categoryService.findAll(pageable));
     }
 
     @GetMapping("/{id}")
