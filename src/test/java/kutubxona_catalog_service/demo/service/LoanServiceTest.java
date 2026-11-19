@@ -1,13 +1,15 @@
 package kutubxona_catalog_service.demo.service;
 
+import kutubxona_catalog_service.demo.config.LoanProperties;
 import kutubxona_catalog_service.demo.entity.*;
+import kutubxona_catalog_service.demo.exception.BusinessRuleException;
+import kutubxona_catalog_service.demo.exception.ResourceNotFoundException;
 import kutubxona_catalog_service.demo.repository.BookRepository;
 import kutubxona_catalog_service.demo.repository.LoanRepository;
 import kutubxona_catalog_service.demo.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -17,6 +19,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -29,13 +33,16 @@ class LoanServiceTest {
     @Mock LoanRepository loanRepository;
     @Mock BookRepository bookRepository;
     @Mock MemberRepository memberRepository;
-    @InjectMocks LoanService loanService;
+    LoanService loanService;
 
     Book book;
     Member member;
 
     @BeforeEach
     void setUp() {
+        // maxActivePerMember = 2, periodDays = 14
+        loanService = new LoanService(loanRepository, bookRepository, memberRepository,
+                new LoanProperties(2, 14));
         book = new Book();
         book.setId(1L);
         book.setTitle("Kecha va kunduz");
@@ -48,7 +55,7 @@ class LoanServiceTest {
     @Test
     void borrow_success_decrementsCopiesAndCreatesActiveLoan() {
         when(bookRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(book));
-        when(memberRepository.findById(7L)).thenReturn(Optional.of(member));
+        when(memberRepository.findByIdAndDeletedAtIsNull(7L)).thenReturn(Optional.of(member));
         when(loanRepository.save(any(Loan.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Loan loan = loanService.borrowBook(1L, 7L);
@@ -60,34 +67,59 @@ class LoanServiceTest {
     }
 
     @Test
-    void borrow_unknownBook_throwsIllegalArgument() {
+    void borrow_unknownBook_throwsNotFound() {
         when(bookRepository.findByIdForUpdate(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> loanService.borrowBook(99L, 7L))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Kitob topilmadi");
         verify(loanRepository, never()).save(any());
     }
 
     @Test
-    void borrow_unknownMember_throwsIllegalArgument() {
+    void borrow_unknownMember_throwsNotFound() {
         when(bookRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(book));
-        when(memberRepository.findById(99L)).thenReturn(Optional.empty());
+        when(memberRepository.findByIdAndDeletedAtIsNull(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> loanService.borrowBook(1L, 99L))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("A'zo topilmadi");
     }
 
     @Test
-    void borrow_noCopiesLeft_throwsIllegalStateAndDoesNotSave() {
+    void borrow_noCopiesLeft_throwsBusinessRuleAndDoesNotSave() {
         book.setAvailableCopies(0);
         when(bookRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(book));
-        when(memberRepository.findById(7L)).thenReturn(Optional.of(member));
+        when(memberRepository.findByIdAndDeletedAtIsNull(7L)).thenReturn(Optional.of(member));
 
         assertThatThrownBy(() -> loanService.borrowBook(1L, 7L))
-                .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(BusinessRuleException.class);
         assertThat(book.getAvailableCopies()).isZero();
+        verify(loanRepository, never()).save(any());
+    }
+
+    @Test
+    void borrow_sameBookAlreadyOpen_throwsBusinessRule() {
+        when(bookRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(book));
+        when(memberRepository.findByIdAndDeletedAtIsNull(7L)).thenReturn(Optional.of(member));
+        when(loanRepository.existsByMember_IdAndBook_IdAndStatusIn(eq(7L), eq(1L), anyCollection()))
+                .thenReturn(true);
+
+        assertThatThrownBy(() -> loanService.borrowBook(1L, 7L))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("allaqachon olgan");
+        assertThat(book.getAvailableCopies()).isEqualTo(1);
+    }
+
+    @Test
+    void borrow_limitReached_throwsBusinessRule() {
+        when(bookRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(book));
+        when(memberRepository.findByIdAndDeletedAtIsNull(7L)).thenReturn(Optional.of(member));
+        when(loanRepository.countByMember_IdAndStatusIn(eq(7L), anyCollection())).thenReturn(2L);
+
+        assertThatThrownBy(() -> loanService.borrowBook(1L, 7L))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("2 tadan ortiq");
         verify(loanRepository, never()).save(any());
     }
 
@@ -107,13 +139,13 @@ class LoanServiceTest {
     }
 
     @Test
-    void return_alreadyReturned_throwsIllegalState() {
+    void return_alreadyReturned_throwsBusinessRule() {
         Loan loan = activeLoan();
         loan.setStatus(LoanStatus.RETURNED);
         when(loanRepository.findById(5L)).thenReturn(Optional.of(loan));
 
         assertThatThrownBy(() -> loanService.returnBook(5L))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("allaqachon qaytarilgan");
         verify(bookRepository, never()).save(any());
     }

@@ -42,4 +42,9 @@ public abstract class BaseEntity {
 
     @Column(name = "deleted_by")
     private Long deletedBy;
+
+    /** Soft delete: yozuv bazada qoladi, faqat o'chirilgan deb belgilanadi. */
+    public void markDeleted() {
+        this.deletedAt = LocalDateTime.now();
+    }
 }

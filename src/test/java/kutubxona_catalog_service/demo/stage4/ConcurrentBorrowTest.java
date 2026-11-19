@@ -2,14 +2,11 @@ package kutubxona_catalog_service.demo.stage4;
 
 import kutubxona_catalog_service.demo.entity.Book;
 import kutubxona_catalog_service.demo.entity.Member;
-import kutubxona_catalog_service.demo.repository.BookRepository;
-import kutubxona_catalog_service.demo.repository.LoanRepository;
-import kutubxona_catalog_service.demo.repository.MemberRepository;
+import kutubxona_catalog_service.demo.exception.BusinessRuleException;
 import kutubxona_catalog_service.demo.service.LoanService;
-import org.junit.jupiter.api.AfterEach;
+import kutubxona_catalog_service.demo.support.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,22 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 4-bosqich: bir vaqtning o'zida kelgan so'rovlar oxirgi nusxani
  * bir necha marta bermasligi kerak (race condition / lost update).
  */
-@SpringBootTest
-class ConcurrentBorrowTest {
+class ConcurrentBorrowTest extends IntegrationTestBase {
 
     private static final int THREADS = 10;
 
     @Autowired LoanService loanService;
-    @Autowired BookRepository bookRepository;
-    @Autowired MemberRepository memberRepository;
-    @Autowired LoanRepository loanRepository;
-
-    @AfterEach
-    void cleanUp() {
-        loanRepository.deleteAll();
-        bookRepository.deleteAll();
-        memberRepository.deleteAll();
-    }
 
     @Test
     void concurrentBorrows_neverGiveMoreCopiesThanAvailable() throws Exception {
@@ -69,7 +55,7 @@ class ConcurrentBorrowTest {
                 try {
                     loanService.borrowBook(bookId, memberId);
                     success.incrementAndGet();
-                } catch (IllegalStateException e) {
+                } catch (BusinessRuleException e) {
                     rejected.incrementAndGet(); // "nusxa qolmagan"
                 }
                 return null;

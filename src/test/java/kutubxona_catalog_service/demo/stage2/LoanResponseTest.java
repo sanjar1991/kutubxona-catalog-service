@@ -2,16 +2,9 @@ package kutubxona_catalog_service.demo.stage2;
 
 import kutubxona_catalog_service.demo.entity.Book;
 import kutubxona_catalog_service.demo.entity.Member;
-import kutubxona_catalog_service.demo.repository.BookRepository;
-import kutubxona_catalog_service.demo.repository.LoanRepository;
-import kutubxona_catalog_service.demo.repository.MemberRepository;
-import org.junit.jupiter.api.AfterEach;
+import kutubxona_catalog_service.demo.support.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -23,21 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Loan.book va Loan.member LAZY — entity'ni to'g'ridan-to'g'ri JSON'ga
  * aylantirish Hibernate proxy sababli xato beradi.
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-class LoanResponseTest {
-
-    @Autowired MockMvc mockMvc;
-    @Autowired BookRepository bookRepository;
-    @Autowired MemberRepository memberRepository;
-    @Autowired LoanRepository loanRepository;
-
-    @AfterEach
-    void cleanUp() {
-        loanRepository.deleteAll();
-        bookRepository.deleteAll();
-        memberRepository.deleteAll();
-    }
+class LoanResponseTest extends IntegrationTestBase {
 
     @Test
     void getAllLoans_returnsFlatJsonWithBookAndMemberInfo() throws Exception {

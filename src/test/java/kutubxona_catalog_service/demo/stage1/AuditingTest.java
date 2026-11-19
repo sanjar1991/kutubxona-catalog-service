@@ -2,14 +2,9 @@ package kutubxona_catalog_service.demo.stage1;
 
 import kutubxona_catalog_service.demo.entity.Author;
 import kutubxona_catalog_service.demo.entity.Category;
-import kutubxona_catalog_service.demo.repository.AuthorRepository;
-import kutubxona_catalog_service.demo.repository.CategoryRepository;
+import kutubxona_catalog_service.demo.support.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -21,13 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * BaseEntity'dagi createdAt (nullable=false) avtomatik to'ldirilishi kerak,
  * aks holda Author/Category saqlanmaydi.
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-class AuditingTest {
-
-    @Autowired AuthorRepository authorRepository;
-    @Autowired CategoryRepository categoryRepository;
-    @Autowired MockMvc mockMvc;
+class AuditingTest extends IntegrationTestBase {
 
     @Test
     void savingAuthor_fillsCreatedAtAndUpdatedAt() {
