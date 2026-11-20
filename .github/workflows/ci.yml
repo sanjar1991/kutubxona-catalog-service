@@ -1,0 +1,48 @@
+# Har bir push va PR'da loyihani yig'adi va barcha testlarni ishga tushiradi.
+# ubuntu-latest'da Docker bor — Testcontainers (PostgreSQL) testlari ham ishlaydi.
+name: CI
+
+on:
+  push:
+    branches: [main, DevBranch]
+  pull_request:
+    branches: [main]
+
+# Bitta branch'ga ketma-ket push bo'lsa, eskisi bekor qilinadi
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build & test (Java 17)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Kodni olish
+        uses: actions/checkout@v4
+
+      - name: Java 17 o'rnatish
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Testcontainers uchun Postgres image'ni oldindan yuklash
+        run: docker pull postgres:16
+
+      - name: Yig'ish va testlar
+        run: ./mvnw -B -ntp clean verify
+
+      - name: Test hisobotlarini saqlash (xato bo'lsa)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
+          retention-days: 7
