@@ -46,6 +46,13 @@ class ConfigurationTest extends IntegrationTestBase {
     }
 
     @Test
+    void localEnvFile_isImportedOptionally() throws Exception {
+        // .env bo'lsa — undagi DB_PASSWORD ishlatiladi; bo'lmasa (CI) — xato bermaydi
+        assertThat(mainProperties().getProperty("spring.config.import"))
+                .isEqualTo("optional:file:.env[.properties]");
+    }
+
+    @Test
     void mainConfig_isLoadedInTests_andTestProfileOverridesDatabase() {
         // Asosiy fayldagi qiymat testlarda ham ko'rinadi (avval test fayli uni to'sib qo'ygan edi)
         assertThat(environment.getProperty("library.loan.max-active-per-member")).isEqualTo("5");

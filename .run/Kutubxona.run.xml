@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <!-- IntelliJ IDEA: yuqoridagi Run ro'yxatida "Kutubxona (local)" bo'lib chiqadi.
+       Ishchi papka loyiha ildizi — shuning uchun .env fayli topiladi. -->
+  <configuration default="false" name="Kutubxona (local)" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="kutubxona_catalog_service.demo.DemoApplication" />
+    <module name="demo" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
